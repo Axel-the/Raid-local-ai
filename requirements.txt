@@ -1,0 +1,9 @@
+flask
+flask-socketio
+flask-cors
+ollama
+SpeechRecognition
+pywin32
+mss
+Pillow
+eventlet

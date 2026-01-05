@@ -21,7 +21,7 @@ import os
 # --- CONFIGURACIÓN ---
 MODELO_VISION = "moondream:1.8b"   # El que tiene ojos
 MODELO_CHAT = "llama3.2:3b"        # El que habla bien español
-NOMBRE_IA = "Ojo Local"
+NOMBRE_IA = "Raid"
 IDIOMA = "es-ES"
 
 # --- INICIALIZACIÓN WEB ---
@@ -205,15 +205,27 @@ def ai_worker():
             memoria_global['historial_corto'].append({'role': 'assistant', 'content': full_response})
             
             # Pedir a Llama que extraiga algo nuevo sobre el usuario (en segundo plano)
-            if len(memoria_global['historial_corto']) % 4 == 0:
-                print("Aprendiendo sobre el usuario...")
+            if len(memoria_global['historial_corto']) % 2 == 0:
+                print("Actualizando memoria...")
                 resp_aprendizaje = ollama.chat(
                     model=MODELO_CHAT,
-                    messages=[{'role': 'user', 'content': f"Basado en esta charla: '{prompt}', ¿qué aprendiste del usuario en 3 palabras? Ej: 'Le gusta Python'."}]
+                    messages=[{'role': 'user', 'content': f"Basado en esta charla: '{prompt}', ¿qué aprendiste del usuario? Responde solo con 2 o 3 palabras clave. Si dijo su nombre, responde 'Nombre: [nombre]'."}]
                 )
-                memoria_global['datos_aprendidos'].append(resp_aprendizaje['message']['content'].strip())
+                nueva_info = resp_aprendizaje['message']['content'].strip()
+                if "Nombre:" in nueva_info:
+                    memoria_global['perfil_usuario'] = nueva_info.replace("Nombre:", "").strip()
+                else:
+                    memoria_global['datos_aprendidos'].append(nueva_info)
             
             guardar_memoria(memoria_global)
+            
+            # Notificar a la UI
+            try:
+                import __main__
+                if hasattr(__main__, 'signal_memory_update'):
+                    __main__.signal_memory_update()
+            except: pass
+
             update_ui(msg=full_response, role='ai', is_partial=False)
 
         except sr.UnknownValueError:
@@ -226,9 +238,28 @@ def ai_worker():
 def index():
     return render_template('index.html')
 
+@socketio.on('connect')
+def handle_connect():
+    # Enviar memoria actual al conectar
+    socketio.emit('update_memory', {
+        'identity': memoria_global['perfil_usuario'],
+        'interests': memoria_global['datos_aprendidos']
+    })
+
 if __name__ == "__main__":
     # Iniciar hilos
     threading.Thread(target=procsador_voz_thread, daemon=True).start()
     threading.Thread(target=ai_worker, daemon=True).start()
+    
+    # Emitir actualizaciones de memoria periódicamente o en eventos
+    def signal_memory_update():
+        socketio.emit('update_memory', {
+            'identity': memoria_global['perfil_usuario'],
+            'interests': memoria_global['datos_aprendidos']
+        })
+    
+    # Inyectar una referencia para que ai_worker pueda llamar a esta actualización
+    import __main__
+    __main__.signal_memory_update = signal_memory_update
     
     socketio.run(app, debug=False, port=5000)

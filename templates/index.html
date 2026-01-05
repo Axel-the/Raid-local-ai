@@ -4,95 +4,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ojo Local - Vision AI</title>
+    <title>Raid - OS Intelligence</title>
+    <link rel="icon" type="image/jpeg" href="/static/raid.jpeg">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono:wght@300;400&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --bg-main: #0a0a0c;
-            --bg-card: rgba(20, 20, 25, 0.7);
+            --bg-deep: #050505;
+            --bg-surface: #0f0f12;
             --accent: #00f2ff;
-            --accent-purple: #9d00ff;
-            --accent-green: #00ff88;
-            --text-primary: #f0f0f5;
-            --text-secondary: #a0a0b0;
-            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent-soft: rgba(0, 242, 255, 0.15);
+            --border: rgba(255, 255, 255, 0.05);
+            --text-main: #e0e0e0;
+            --text-dim: #707075;
+            --sidebar-width: 380px;
         }
 
         * {
             box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
             margin: 0;
             padding: 0;
-            background-color: var(--bg-main);
-            color: var(--text-primary);
+            background-color: var(--bg-deep);
+            color: var(--text-main);
             font-family: 'Outfit', sans-serif;
             height: 100vh;
             display: flex;
             overflow: hidden;
-            background-image:
-                radial-gradient(circle at 10% 20%, rgba(157, 0, 255, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(0, 242, 255, 0.05) 0%, transparent 40%);
         }
 
-        /* --- SIDEBAR PANEL --- */
-        .panel {
-            width: 400px;
-            background: var(--bg-card);
-            backdrop-filter: blur(30px);
-            border-right: 1px solid var(--glass-border);
+        /* --- SIDEBAR: SERIOUS & ORDERLY --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            padding: 30px;
-            box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
+            padding: 0;
             z-index: 10;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
         }
 
-        .brand {
+        .sidebar-header {
+            padding: 40px 30px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 30px;
+            gap: 15px;
+            border-bottom: 1px solid var(--border);
         }
 
-        .brand h1 {
-            font-size: 20px;
+        .sidebar-header img {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 15px var(--accent-soft);
+        }
+
+        .sidebar-header h1 {
+            font-size: 18px;
             font-weight: 600;
-            letter-spacing: 3px;
+            letter-spacing: 4px;
             margin: 0;
-            background: linear-gradient(90deg, var(--accent), var(--accent-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
             text-transform: uppercase;
+            color: #fff;
         }
 
-        /* --- SCREEN SHOT CARD --- */
-        .vision-container {
-            width: 100%;
-            margin-bottom: 25px;
+        .sidebar-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
         }
 
-        .vision-label {
-            font-size: 11px;
-            color: var(--text-secondary);
+        .sidebar-scroll::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+            background: var(--border);
+        }
+
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--accent);
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 10px;
-            display: block;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .screen-frame {
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* --- VISION & PROFILE --- */
+        .vision-preview {
             width: 100%;
             aspect-ratio: 16/9;
             background: #000;
-            border-radius: 12px;
+            border-radius: 8px;
             overflow: hidden;
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--border);
             position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
         #captured-image {
@@ -100,67 +128,81 @@
             height: 100%;
             object-fit: cover;
             opacity: 0;
-            transition: opacity 0.5s ease;
         }
 
-        /* --- CHAT SECTION --- */
-        .chat-container {
+        .profile-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .profile-field {
+            margin-bottom: 15px;
+        }
+
+        .profile-key {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .profile-val {
+            font-size: 15px;
+            color: #fff;
+            font-weight: 400;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .interest-tag {
+            background: var(--border);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* --- CHAT: CLEAN & READABLE --- */
+        .chat-feed {
             flex: 1;
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
-            mask-image: linear-gradient(to bottom, transparent, black 5%, black 95%, transparent);
-            padding: 10px 5px;
-        }
-
-        .chat-container::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .chat-container::-webkit-scrollbar-thumb {
-            background: var(--glass-border);
-            border-radius: 10px;
+            gap: 20px;
         }
 
         .msg {
-            margin-bottom: 15px;
-            padding: 14px 18px;
-            border-radius: 16px;
-            font-size: 15px;
-            line-height: 1.5;
-            max-width: 95%;
-            animation: fadeIn 0.4s ease forwards;
+            font-size: 14px;
+            line-height: 1.6;
+            max-width: 100%;
+            padding: 15px;
+            border-radius: 4px;
+            position: relative;
         }
 
         .msg-user {
-            background: rgba(0, 242, 255, 0.08);
-            border-left: 3px solid var(--accent);
-            align-self: flex-start;
+            background: var(--accent-soft);
             color: var(--accent);
-            border-bottom-left-radius: 4px;
+            border-left: 2px solid var(--accent);
         }
 
         .msg-ai {
             background: rgba(255, 255, 255, 0.03);
-            border-right: 3px solid var(--accent-purple);
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
+            border-left: 2px solid #555;
+            color: #ccc;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* --- MAIN CORE PANEL --- */
-        .main {
+        /* --- CENTER CORE --- */
+        .viewport {
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -169,48 +211,36 @@
             position: relative;
         }
 
-        .core-visual {
-            position: relative;
-            width: 400px;
-            height: 400px;
+        .ai-orb-container {
+            width: 300px;
+            height: 300px;
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
 
-        .orb {
-            width: 180px;
-            height: 180px;
+        .orb-outer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 1px solid var(--border);
             border-radius: 50%;
-            background: var(--accent);
+            border-style: dashed;
+            animation: spin 30s linear infinite;
+        }
+
+        .orb-inner {
+            width: 120px;
+            height: 120px;
+            background: #fff;
+            border-radius: 50%;
             filter: blur(20px);
-            opacity: 0.6;
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 100px var(--accent);
+            opacity: 0.1;
+            box-shadow: 0 0 80px rgba(255, 255, 255, 0.2);
         }
 
-        .orbit {
-            position: absolute;
-            width: 320px;
-            height: 320px;
-            border: 1px solid var(--glass-border);
-            border-radius: 50%;
-            animation: rotate 20s linear infinite;
-        }
-
-        .orbit::before {
-            content: '';
-            position: absolute;
-            top: -4px;
-            left: 50%;
-            width: 8px;
-            height: 8px;
-            background: var(--accent);
-            border-radius: 50%;
-            box-shadow: 0 0 15px var(--accent);
-        }
-
-        @keyframes rotate {
+        @keyframes spin {
             from {
                 transform: rotate(0deg);
             }
@@ -220,148 +250,170 @@
             }
         }
 
-        .status-box {
-            margin-top: 40px;
-            text-align: center;
-        }
-
-        .status-text {
-            font-size: 14px;
-            letter-spacing: 5px;
+        .status-header {
+            margin-top: 30px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 6px;
+            color: var(--text-dim);
             text-transform: uppercase;
-            color: var(--text-secondary);
-            font-weight: 300;
         }
 
-        /* --- STATES --- */
-        .state-listening .orb {
+        /* --- STATE ANIMATIONS --- */
+        .state-listening .orb-inner {
             background: var(--accent);
-            box-shadow: 0 0 120px var(--accent);
-            transform: scale(1.1);
+            opacity: 0.6;
+            box-shadow: 0 0 100px var(--accent);
+            transform: scale(1.2);
             filter: blur(15px);
         }
 
-        .state-thinking .orb {
-            background: var(--accent-purple);
-            box-shadow: 0 0 120px var(--accent-purple);
-            animation: breathing 2s ease-in-out infinite;
+        .state-thinking .orb-inner {
+            background: #9d00ff;
+            opacity: 0.5;
+            box-shadow: 0 0 100px #9d00ff;
+            animation: pulse 1s infinite alternate;
         }
 
-        .state-speaking .orb {
-            background: var(--accent-green);
-            box-shadow: 0 0 120px var(--accent-green);
-            transform: scale(1.2);
-            filter: blur(10px);
+        .state-speaking .orb-inner {
+            background: #00ff88;
+            opacity: 0.6;
+            box-shadow: 0 0 100px #00ff88;
+            transform: scale(1.1);
+            filter: blur(5px);
         }
 
-        @keyframes breathing {
-
-            0%,
-            100% {
+        @keyframes pulse {
+            from {
                 transform: scale(1);
-                opacity: 0.5;
+                opacity: 0.3;
             }
 
-            50% {
-                transform: scale(1.1);
-                opacity: 0.8;
+            to {
+                transform: scale(1.15);
+                opacity: 0.6;
             }
         }
     </style>
 </head>
 
 <body class="state-idle">
-    <div class="panel">
-        <div class="brand">
-            <h1>Ojo Local</h1>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="/static/raid.jpeg" alt="Raid Logo">
+            <h1>Raid</h1>
         </div>
 
-        <div class="vision-container">
-            <span class="vision-label">Visual Input</span>
-            <div class="screen-frame">
-                <img id="captured-image" src="" alt="">
+        <div class="sidebar-scroll">
+            <div class="sidebar-section">
+                <div class="section-label">Vision Input</div>
+                <div class="vision-preview">
+                    <img id="captured-image" src="" alt="">
+                </div>
             </div>
-        </div>
 
-        <div class="chat-container" id="chat">
-            <!-- Mensajes aparecerán aquí -->
-            <div class="msg msg-ai">Sistema inicializado. Hazme una pregunta sobre lo que ves.</div>
+            <div class="sidebar-section">
+                <div class="section-label">Memory Engine</div>
+                <div class="profile-box">
+                    <div class="profile-field">
+                        <span class="profile-key">Identity</span>
+                        <div id="user-id" class="profile-val">New User</div>
+                    </div>
+                    <div class="profile-field">
+                        <span class="profile-key">Known Traits</span>
+                        <div id="user-tags" class="tags-container">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-label">Live Logs</div>
+                <div class="chat-feed" id="chat">
+                    <div class="msg msg-ai">Raid system online. Ready for visual analysis.</div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="main">
-        <div class="core-visual">
-            <div class="orbit"></div>
-            <div class="orb"></div>
+    <div class="viewport">
+        <div class="ai-orb-container">
+            <div class="orb-outer"></div>
+            <div class="orb-inner"></div>
         </div>
-        <div class="status-box">
-            <div class="status-text" id="status-label">Sistema Online</div>
-        </div>
+        <div class="status-header" id="status-txt">System Idle</div>
     </div>
 
     <script>
         const socket = io();
         const chat = document.getElementById('chat');
         const img = document.getElementById('captured-image');
-        const statusLabel = document.getElementById('status-label');
+        const statusTxt = document.getElementById('status-txt');
+        const userId = document.getElementById('user-id');
+        const userTags = document.getElementById('user-tags');
         const body = document.body;
 
-        let currentAiMessageDiv = null;
+        let lastAiMsg = null;
+
+        socket.on('update_memory', (data) => {
+            if (data.identity) userId.innerText = data.identity;
+            if (data.interests) {
+                userTags.innerHTML = '';
+                data.interests.forEach(tag => {
+                    const span = document.createElement('span');
+                    span.className = 'interest-tag';
+                    span.innerText = tag;
+                    userTags.appendChild(span);
+                });
+            }
+        });
 
         socket.on('update_status', (data) => {
-            // Actualizar estado visual
             if (data.state) {
                 body.className = 'state-' + data.state;
-                const labels = {
-                    'listening': 'Escuchando...',
-                    'thinking': 'Analizando...',
-                    'remembering': 'Recordando...',
-                    'speaking': 'Hablando...',
-                    'idle': 'En línea'
+                const statusMap = {
+                    'listening': 'Listening...',
+                    'thinking': 'Analyzing OS...',
+                    'speaking': 'Synthesizing...',
+                    'remembering': 'Recalling Memory...',
+                    'idle': 'System Ready'
                 };
-                statusLabel.innerText = labels[data.state] || 'Sistema Online';
+                statusTxt.innerText = statusMap[data.state] || 'Standby';
             }
 
-            // Actualizar imagen
             if (data.image) {
                 const src = data.image.startsWith('data:') ? data.image : 'data:image/jpeg;base64,' + data.image;
                 img.src = src;
                 img.style.opacity = 1;
             }
 
-            // Gestión de mensajes sin duplicados
-            if (data.msg !== undefined && data.msg !== null) {
+            if (data.msg) {
                 if (data.role === 'user') {
-                    // Mensaje del usuario: siempre crear nuevo
                     const div = document.createElement('div');
                     div.className = 'msg msg-user';
-                    div.innerText = data.msg;
+                    div.innerText = '> ' + data.msg;
                     chat.appendChild(div);
-                    currentAiMessageDiv = null; // Resetear para la nueva respuesta de IA
-                }
-                else if (data.role === 'ai') {
+                    lastAiMsg = null;
+                } else {
                     if (data.is_partial) {
-                        // Si no existe el div actual para esta respuesta, lo creamos
-                        if (!currentAiMessageDiv) {
-                            currentAiMessageDiv = document.createElement('div');
-                            currentAiMessageDiv.className = 'msg msg-ai';
-                            chat.appendChild(currentAiMessageDiv);
+                        if (!lastAiMsg) {
+                            lastAiMsg = document.createElement('div');
+                            lastAiMsg.className = 'msg msg-ai';
+                            chat.appendChild(lastAiMsg);
                         }
-                        currentAiMessageDiv.innerText = data.msg;
+                        lastAiMsg.innerText = data.msg;
                     } else {
-                        // Mensaje final
-                        if (currentAiMessageDiv) {
-                            currentAiMessageDiv.innerText = data.msg;
-                        } else {
+                        if (lastAiMsg) lastAiMsg.innerText = data.msg;
+                        else {
                             const div = document.createElement('div');
                             div.className = 'msg msg-ai';
                             div.innerText = data.msg;
                             chat.appendChild(div);
                         }
-                        currentAiMessageDiv = null; // Finalizado
+                        lastAiMsg = null;
                     }
                 }
-                chat.scrollTop = chat.scrollHeight;
+                chat.parentElement.scrollTop = chat.parentElement.scrollHeight;
             }
         });
     </script>

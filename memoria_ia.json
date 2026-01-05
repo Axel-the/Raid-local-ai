@@ -1,5 +1,5 @@
 {
-    "perfil_usuario": "Usuario nuevo",
+    "perfil_usuario": "Richard",
     "historial_corto": [
         {
             "role": "user",
@@ -40,10 +40,36 @@
         {
             "role": "assistant",
             "content": "Sí, conozco a Hostinger. Es una compañía cuyas herramientas de alojamiento web permiten a los usuarios crear y hospedar sitios web, además de ofrecer servicios como alojamiento de correo electrónico y otros. Me parece que Has escuchado hablar de ellos en alguna charla o tutorial sobre desarrollo web o creación de sitios web. ¿Te gust"
+        },
+        {
+            "role": "user",
+            "content": "contexto"
+        },
+        {
+            "role": "assistant",
+            "content": "Disculpa! El contexto es que estabas hablando sobre Hostinger como un plan para alojar sitios webs y bps (probablemente blogs). No tengo más información específica sobre nuestra conversación, pero parece que puedo aprender algo nuevo contigo. ¿Quieres seguir hablando sobre Hosting o cambiar de tema?"
+        },
+        {
+            "role": "user",
+            "content": "Hola Qué tal Cómo estás Mi nombre es Richard tú cómo te llamas"
+        },
+        {
+            "role": "assistant",
+            "content": "Hola Richard! Estoy bien, gracias por preguntar. Me llamo Ojo Local, soy un amigo español que habla con muchos usuarios diferentes como tú. Es genial conocerte, ¿de dónde eres?"
+        },
+        {
+            "role": "user",
+            "content": "entiende"
+        },
+        {
+            "role": "assistant",
+            "content": "Parece que me estás diciendo \"entiendo\" en el sentido de que te estoy entendiendo a ti, no tengo más información sobre nuestra conversación, ¿correcto? ¿Quieres empezar de nuevo y hablar sobre algo en particular o simplemente charlar un rato?"
         }
     ],
     "datos_aprendidos": [
         "No tengo información previa sobre nuestra conversación. ¿Podrías proporcionarme más contexto o iniciar una nueva charla para que pueda aprender algo de ti?",
-        "No tengo la charla para poder responder. ¿Podrías proporcionar más contexto o detalles sobre la charla que se realizó? Estoy aquí para ayudarte, ¡y puedo aprender a través de ti!"
+        "No tengo la charla para poder responder. ¿Podrías proporcionar más contexto o detalles sobre la charla que se realizó? Estoy aquí para ayudarte, ¡y puedo aprender a través de ti!",
+        "No tengo información sobre la charla. ¿Podrías proporcionarme más contexto o detalles sobre el tema que querés discutir y qué tipo de contenido vas a compartir en la charla para poder darte una respuesta acorde?",
+        "No tengo información sobre la charla específica. ¿Podrías proporcionar más contexto o detalles sobre la conversación que tuvimos? Estoy aquí para ayudarte."
     ]
 }
