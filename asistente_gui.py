@@ -15,6 +15,9 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 
+import json
+import os
+
 # --- CONFIGURACIÓN ---
 MODELO_VISION = "moondream:1.8b"   # El que tiene ojos
 MODELO_CHAT = "llama3.2:3b"        # El que habla bien español
@@ -25,6 +28,25 @@ IDIOMA = "es-ES"
 app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+
+# --- PERSISTENCIA DE MEMORIA ---
+ARCHIVO_MEMORIA = "memoria_ia.json"
+
+def cargar_memoria():
+    if os.path.exists(ARCHIVO_MEMORIA):
+        with open(ARCHIVO_MEMORIA, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return {
+        "perfil_usuario": "Usuario nuevo",
+        "historial_corto": [],
+        "datos_aprendidos": []
+    }
+
+def guardar_memoria(memoria):
+    with open(ARCHIVO_MEMORIA, 'w', encoding='utf-8') as f:
+        json.dump(memoria, f, ensure_ascii=False, indent=4)
+
+memoria_global = cargar_memoria()
 
 # --- ESTADO GLOBAL ---
 cola_voz = queue.Queue()
@@ -97,9 +119,10 @@ def procsador_voz_thread():
     except Exception as e:
         print(f"Error voz: {e}")
 
-# --- TRABAJADOR DE IA (HÍBRIDO: MOONDREAM + LLAMA) ---
+# --- TRABAJADOR DE IA CON MEMORIA ---
 def ai_worker():
-    print("Iniciando IA Híbrida (Visión + Chat)...")
+    global memoria_global
+    print("Iniciando IA Híbrida con Memoria...")
     recognizer = sr.Recognizer()
     mic = sr.Microphone()
     
@@ -117,31 +140,48 @@ def ai_worker():
             update_ui(state='thinking')
             prompt = recognizer.recognize_google(audio, language=IDIOMA)
             
+            # Pasos de procesamiento
             img_raw, img_b64 = capturar_pantalla_b64()
+            
+            # 1. Mostrar prompt del usuario inmediatamente con la imagen
             update_ui(msg=prompt, role='user', image=img_b64)
 
-            # PASO 1: Analizar imagen con Moondream
+            # PASO 1: Analizar imagen (Visión)
+            update_ui(state='thinking')
             print("Analizando imagen...")
             vision_resp = ollama.chat(
                 model=MODELO_VISION,
-                messages=[{'role': 'user', 'content': 'Describe briefly everything you see on this screen.', 'images': [img_raw]}]
+                messages=[{'role': 'user', 'content': 'Describe briefly the key elements on screen.', 'images': [img_raw]}]
             )
             contexto_visual = vision_resp['message']['content']
 
-            # PASO 2: Generar respuesta final con Llama 3.2 (Streaming)
-            print("Generando respuesta con Llama...")
+            # PASO 2: Generar respuesta con Contexto Histórico
+            update_ui(state='remembering') # Nuevo estado para la UI
+            print("Generando respuesta contextual con Llama...")
+            
+            system_prompt = (
+                f"Eres un amigo español llamado {NOMBRE_IA}. Tienes memoria a largo plazo. "
+                f"Lo que has aprendido del usuario: {memoria_global['perfil_usuario']}. "
+                f"Datos adicionales: {', '.join(memoria_global['datos_aprendidos'])}. "
+                f"Contexto visual actual: {contexto_visual}. "
+                f"Responde de forma muy natural y breve (máximo 1 frase)."
+            )
+
             stream = ollama.chat(
                 model=MODELO_CHAT,
                 messages=[
-                    {'role': 'system', 'content': f'Eres un amigo español. Estás viendo mi pantalla. Descripción de lo que hay ahora: {contexto_visual}. Responde brevemente (máximo 1 frase) en español.'},
+                    {'role': 'system', 'content': system_prompt},
+                    *memoria_global['historial_corto'][-6:], # Últimos 6 mensajes
                     {'role': 'user', 'content': prompt}
                 ],
                 stream=True,
-                options={'num_predict': 60} # Evitar que se enrolle
+                options={'num_predict': 80}
             )
             
             full_response = ""
             sentence_buffer = ""
+            
+            # Iniciamos el stream en el frontend
             update_ui(state='thinking', msg="", role='ai', is_partial=True)
 
             for chunk in stream:
@@ -149,6 +189,7 @@ def ai_worker():
                 full_response += text_chunk
                 sentence_buffer += text_chunk
                 
+                # Actualizar el mismo mensaje en la UI
                 update_ui(msg=full_response, role='ai', is_partial=True)
 
                 if any(p in text_chunk for p in ['.', '!', '?', ',', '\n']):
@@ -159,6 +200,20 @@ def ai_worker():
             if sentence_buffer.strip():
                 cola_voz.put(sentence_buffer.strip())
             
+            # --- APRENDIZAJE POST-INTERACCIÓN ---
+            memoria_global['historial_corto'].append({'role': 'user', 'content': prompt})
+            memoria_global['historial_corto'].append({'role': 'assistant', 'content': full_response})
+            
+            # Pedir a Llama que extraiga algo nuevo sobre el usuario (en segundo plano)
+            if len(memoria_global['historial_corto']) % 4 == 0:
+                print("Aprendiendo sobre el usuario...")
+                resp_aprendizaje = ollama.chat(
+                    model=MODELO_CHAT,
+                    messages=[{'role': 'user', 'content': f"Basado en esta charla: '{prompt}', ¿qué aprendiste del usuario en 3 palabras? Ej: 'Le gusta Python'."}]
+                )
+                memoria_global['datos_aprendidos'].append(resp_aprendizaje['message']['content'].strip())
+            
+            guardar_memoria(memoria_global)
             update_ui(msg=full_response, role='ai', is_partial=False)
 
         except sr.UnknownValueError:

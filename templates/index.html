@@ -4,41 +4,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ojo Local - AI Interface</title>
+    <title>Ojo Local - Vision AI</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #050505;
+            --bg-main: #0a0a0c;
+            --bg-card: rgba(20, 20, 25, 0.7);
             --accent: #00f2ff;
-            --accent-dim: rgba(0, 242, 255, 0.2);
-            --text: #ffffff;
-            --glass: rgba(255, 255, 255, 0.05);
+            --accent-purple: #9d00ff;
+            --accent-green: #00ff88;
+            --text-primary: #f0f0f5;
+            --text-secondary: #a0a0b0;
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
         }
 
         body {
             margin: 0;
             padding: 0;
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            overflow: hidden;
-            display: flex;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
             height: 100vh;
+            display: flex;
+            overflow: hidden;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(157, 0, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 242, 255, 0.05) 0%, transparent 40%);
         }
 
-        /* --- DASHBOARD LAYOUT --- */
-        .sidebar {
-            width: 350px;
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        /* --- SIDEBAR PANEL --- */
+        .panel {
+            width: 400px;
+            background: var(--bg-card);
+            backdrop-filter: blur(30px);
+            border-right: 1px solid var(--glass-border);
             display: flex;
             flex-direction: column;
-            padding: 20px;
-            box-sizing: border-box;
+            padding: 30px;
+            box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
+            z-index: 10;
         }
 
-        .main-content {
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .brand h1 {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            margin: 0;
+            background: linear-gradient(90deg, var(--accent), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        /* --- SCREEN SHOT CARD --- */
+        .vision-container {
+            width: 100%;
+            margin-bottom: 25px;
+        }
+
+        .vision-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .screen-frame {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        #captured-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        /* --- CHAT SECTION --- */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            mask-image: linear-gradient(to bottom, transparent, black 5%, black 95%, transparent);
+            padding: 10px 5px;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 10px;
+        }
+
+        .msg {
+            margin-bottom: 15px;
+            padding: 14px 18px;
+            border-radius: 16px;
+            font-size: 15px;
+            line-height: 1.5;
+            max-width: 95%;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .msg-user {
+            background: rgba(0, 242, 255, 0.08);
+            border-left: 3px solid var(--accent);
+            align-self: flex-start;
+            color: var(--accent);
+            border-bottom-left-radius: 4px;
+        }
+
+        .msg-ai {
+            background: rgba(255, 255, 255, 0.03);
+            border-right: 3px solid var(--accent-purple);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- MAIN CORE PANEL --- */
+        .main {
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -47,34 +169,45 @@
             position: relative;
         }
 
-        /* --- AI CORE (GLOWING ORB) --- */
-        .ai-core-container {
+        .core-visual {
             position: relative;
-            width: 300px;
-            height: 300px;
+            width: 400px;
+            height: 400px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .orb {
-            width: 150px;
-            height: 150px;
+            width: 180px;
+            height: 180px;
             border-radius: 50%;
-            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-            box-shadow: 0 0 50px var(--accent);
-            transition: all 0.5s ease;
-            filter: blur(5px);
+            background: var(--accent);
+            filter: blur(20px);
+            opacity: 0.6;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 100px var(--accent);
         }
 
-        .status-ring {
+        .orbit {
             position: absolute;
-            width: 250px;
-            height: 250px;
-            border: 2px dashed var(--accent);
+            width: 320px;
+            height: 320px;
+            border: 1px solid var(--glass-border);
             border-radius: 50%;
-            opacity: 0.3;
-            animation: rotate 10s linear infinite;
+            animation: rotate 20s linear infinite;
+        }
+
+        .orbit::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--accent);
         }
 
         @keyframes rotate {
@@ -87,206 +220,145 @@
             }
         }
 
+        .status-box {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .status-text {
+            font-size: 14px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+
         /* --- STATES --- */
         .state-listening .orb {
-            background: #00f2ff;
-            box-shadow: 0 0 80px #00f2ff;
-            animation: pulse 1.5s infinite;
+            background: var(--accent);
+            box-shadow: 0 0 120px var(--accent);
+            transform: scale(1.1);
+            filter: blur(15px);
         }
 
         .state-thinking .orb {
-            background: #bc00ff;
-            box-shadow: 0 0 80px #bc00ff;
-            animation: scan 1s infinite alternate;
+            background: var(--accent-purple);
+            box-shadow: 0 0 120px var(--accent-purple);
+            animation: breathing 2s ease-in-out infinite;
         }
 
         .state-speaking .orb {
-            background: #00ff88;
-            box-shadow: 0 0 80px #00ff88;
-            transform: scale(1.1);
+            background: var(--accent-green);
+            box-shadow: 0 0 120px var(--accent-green);
+            transform: scale(1.2);
+            filter: blur(10px);
         }
 
-        @keyframes pulse {
-            0% {
+        @keyframes breathing {
+
+            0%,
+            100% {
                 transform: scale(1);
-                opacity: 1;
+                opacity: 0.5;
             }
 
             50% {
-                transform: scale(1.2);
-                opacity: 0.7;
+                transform: scale(1.1);
+                opacity: 0.8;
             }
-
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
-        /* --- SCREEN PREVIEW --- */
-        .screen-preview {
-            width: 100%;
-            height: 200px;
-            border-radius: 15px;
-            background: #111;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        #captured-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.6;
-            transition: opacity 0.3s;
-        }
-
-        .screen-label {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
-
-        /* --- CHAT FEED --- */
-        .chat-feed {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            padding-right: 10px;
-        }
-
-        .chat-feed::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .chat-feed::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
-        }
-
-        .msg {
-            padding: 12px 16px;
-            border-radius: 12px;
-            font-size: 14px;
-            line-height: 1.4;
-            max-width: 90%;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        .msg-user {
-            background: var(--accent-dim);
-            align-self: flex-start;
-            border-left: 3px solid var(--accent);
-        }
-
-        .msg-ai {
-            background: rgba(255, 255, 255, 0.05);
-            align-self: flex-end;
-            border-right: 3px solid #bc00ff;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .status-txt {
-            margin-top: 20px;
-            font-size: 18px;
-            font-weight: 300;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            color: var(--accent);
         }
     </style>
 </head>
 
 <body class="state-idle">
-    <div class="sidebar">
-        <h2 style="margin-top: 0; letter-spacing: 2px; font-weight: 400;">OJO LOCAL</h2>
-
-        <div class="screen-preview">
-            <div class="screen-label">Visual Input</div>
-            <img id="captured-image" src="" alt="Esperando captura...">
+    <div class="panel">
+        <div class="brand">
+            <h1>Ojo Local</h1>
         </div>
 
-        <div class="chat-feed" id="chat">
-            <div class="msg msg-ai">Hola. Estoy listo para ver y hablar.</div>
+        <div class="vision-container">
+            <span class="vision-label">Visual Input</span>
+            <div class="screen-frame">
+                <img id="captured-image" src="" alt="">
+            </div>
+        </div>
+
+        <div class="chat-container" id="chat">
+            <!-- Mensajes aparecerán aquí -->
+            <div class="msg msg-ai">Sistema inicializado. Hazme una pregunta sobre lo que ves.</div>
         </div>
     </div>
 
-    <div class="main-content">
-        <div class="ai-core-container" id="container">
-            <div class="status-ring"></div>
+    <div class="main">
+        <div class="core-visual">
+            <div class="orbit"></div>
             <div class="orb"></div>
         </div>
-        <div class="status-txt" id="status-text">Sistema Online</div>
+        <div class="status-box">
+            <div class="status-text" id="status-label">Sistema Online</div>
+        </div>
     </div>
 
     <script>
         const socket = io();
         const chat = document.getElementById('chat');
         const img = document.getElementById('captured-image');
-        const statusText = document.getElementById('status-text');
+        const statusLabel = document.getElementById('status-label');
         const body = document.body;
-        let lastAiMsgDiv = null;
+
+        let currentAiMessageDiv = null;
 
         socket.on('update_status', (data) => {
-            // data structure: { state, msg, role, image, is_partial }
-
+            // Actualizar estado visual
             if (data.state) {
                 body.className = 'state-' + data.state;
-                const statusMap = {
+                const labels = {
                     'listening': 'Escuchando...',
-                    'thinking': 'Pensando...',
+                    'thinking': 'Analizando...',
+                    'remembering': 'Recordando...',
                     'speaking': 'Hablando...',
                     'idle': 'En línea'
                 };
-                statusText.innerText = statusMap[data.state] || 'Sistema Online';
+                statusLabel.innerText = labels[data.state] || 'Sistema Online';
             }
 
+            // Actualizar imagen
             if (data.image) {
-                // Aseguramos que data.image tenga el prefijo si no lo trae
                 const src = data.image.startsWith('data:') ? data.image : 'data:image/jpeg;base64,' + data.image;
                 img.src = src;
                 img.style.opacity = 1;
             }
 
-            if (data.msg !== null && data.msg !== undefined) {
-                if (data.is_partial && data.role === 'ai') {
-                    // Si es un mensaje parcial de la IA, lo actualizamos o creamos
-                    if (!lastAiMsgDiv) {
-                        lastAiMsgDiv = document.createElement('div');
-                        lastAiMsgDiv.className = 'msg msg-ai';
-                        chat.appendChild(lastAiMsgDiv);
-                    }
-                    lastAiMsgDiv.innerText = data.msg;
-                } else {
-                    // Si es un mensaje completo o del usuario
+            // Gestión de mensajes sin duplicados
+            if (data.msg !== undefined && data.msg !== null) {
+                if (data.role === 'user') {
+                    // Mensaje del usuario: siempre crear nuevo
                     const div = document.createElement('div');
-                    div.className = 'msg msg-' + data.role;
+                    div.className = 'msg msg-user';
                     div.innerText = data.msg;
                     chat.appendChild(div);
-
-                    if (data.role === 'ai') {
-                        lastAiMsgDiv = null; // Reiniciar para el próximo stream
+                    currentAiMessageDiv = null; // Resetear para la nueva respuesta de IA
+                }
+                else if (data.role === 'ai') {
+                    if (data.is_partial) {
+                        // Si no existe el div actual para esta respuesta, lo creamos
+                        if (!currentAiMessageDiv) {
+                            currentAiMessageDiv = document.createElement('div');
+                            currentAiMessageDiv.className = 'msg msg-ai';
+                            chat.appendChild(currentAiMessageDiv);
+                        }
+                        currentAiMessageDiv.innerText = data.msg;
+                    } else {
+                        // Mensaje final
+                        if (currentAiMessageDiv) {
+                            currentAiMessageDiv.innerText = data.msg;
+                        } else {
+                            const div = document.createElement('div');
+                            div.className = 'msg msg-ai';
+                            div.innerText = data.msg;
+                            chat.appendChild(div);
+                        }
+                        currentAiMessageDiv = null; // Finalizado
                     }
                 }
                 chat.scrollTop = chat.scrollHeight;

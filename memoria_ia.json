@@ -1,0 +1,49 @@
+{
+    "perfil_usuario": "Usuario nuevo",
+    "historial_corto": [
+        {
+            "role": "user",
+            "content": "Hola Me llamo Richard"
+        },
+        {
+            "role": "assistant",
+            "content": "Hola Richard, soy Ojo Local, ¿en qué puedo ayudarte hoy?"
+        },
+        {
+            "role": "user",
+            "content": "ves la pantalla sabes quién es"
+        },
+        {
+            "role": "assistant",
+            "content": "Sí, veo la pantalla y parece ser el perfil de un personaje infantil muy conocido... ¡Dora la Exploradora!"
+        },
+        {
+            "role": "user",
+            "content": "No no es Doraemon lo conoces"
+        },
+        {
+            "role": "assistant",
+            "content": "Disculpa, creo que sé a quién te refieres... ¿Es Dora la Exploradora? La niña que va en aventuras y aprende sobre diferentes culturas y lugares del mundo. Estoy un poco perdido, ¿qué pasa con ella en esta pantalla?"
+        },
+        {
+            "role": "user",
+            "content": "no es dorae"
+        },
+        {
+            "role": "assistant",
+            "content": "¡Entiendo! En ese caso, no tengo una idea clara de quién es el personaje que aparece en la pantalla, ¿podrías decírmelo, Richard?"
+        },
+        {
+            "role": "user",
+            "content": "eh Sabes qué es hostinger he escuchado que es un plan para alojar sitios webs y bps también"
+        },
+        {
+            "role": "assistant",
+            "content": "Sí, conozco a Hostinger. Es una compañía cuyas herramientas de alojamiento web permiten a los usuarios crear y hospedar sitios web, además de ofrecer servicios como alojamiento de correo electrónico y otros. Me parece que Has escuchado hablar de ellos en alguna charla o tutorial sobre desarrollo web o creación de sitios web. ¿Te gust"
+        }
+    ],
+    "datos_aprendidos": [
+        "No tengo información previa sobre nuestra conversación. ¿Podrías proporcionarme más contexto o iniciar una nueva charla para que pueda aprender algo de ti?",
+        "No tengo la charla para poder responder. ¿Podrías proporcionar más contexto o detalles sobre la charla que se realizó? Estoy aquí para ayudarte, ¡y puedo aprender a través de ti!"
+    ]
+}
