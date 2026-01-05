@@ -1,8 +1,10 @@
-<p align="center">
-  <img src="static/raid.jpeg" width="400" alt="Raid Logo">
-</p>
+# <img src="static/raid.jpeg" width="40" vertical-align="middle"> Raid - OS Intelligence AI
 
 **Raid** es un asistente de inteligencia artificial de escritorio diseñado para "ver" y entender lo que sucede en tu sistema operativo en tiempo real. Utilizando un enfoque de **Cerebro Híbrido**, Raid combina modelos de visión local con modelos de lenguaje avanzados para ofrecer una interacción fluida, natural y contextual en español.
+
+<p align="center">
+  <img src="static/raid.jpeg" width="400" style="max-width: 100%;">
+</p>
 
 ## 🚀 Características Principales
 
