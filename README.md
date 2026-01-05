@@ -1,8 +1,8 @@
-# 🦅 Raid - OS Intelligence AI
+<p align="center">
+  <img src="static/raid.jpeg" width="400" alt="Raid Logo">
+</p>
 
 **Raid** es un asistente de inteligencia artificial de escritorio diseñado para "ver" y entender lo que sucede en tu sistema operativo en tiempo real. Utilizando un enfoque de **Cerebro Híbrido**, Raid combina modelos de visión local con modelos de lenguaje avanzados para ofrecer una interacción fluida, natural y contextual en español.
-
-![Interface Preview](static/raid.jpeg)
 
 ## 🚀 Características Principales
 
@@ -29,7 +29,7 @@
 
 1. Clona el repositorio:
    ```bash
-   git clone https://github.com/tu-usuario/raid.git
+   git clone https://github.com/Axel-the/Raid-local-ai.git
    cd raid
    ```
 
